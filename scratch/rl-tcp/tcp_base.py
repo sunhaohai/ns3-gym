@@ -1,3 +1,7 @@
+import numpy as np
+import tensorflow as tf
+from tensorflow import keras
+
 __author__ = "Piotr Gawlowicz"
 __copyright__ = "Copyright (c) 2018, Technische Universität Berlin"
 __version__ = "0.1.0"
@@ -136,3 +140,66 @@ class TcpTimeBased(Tcp):
         actions = [new_ssThresh, new_cWnd]
 
         return actions
+
+class TcpTimeDQLearning(Tcp):
+    def __init__(self, obsSpace):
+        super(TcpTimeDQLearning, self).__init__()
+        self.s_size = obsSpace.shape[0]
+        self.model = keras.Sequential()
+        self.model.add(keras.layers.Dense(obsSpace.shape[0], input_shape=(obsSpace.shape[0],), activation='relu'))
+        self.model.add(keras.layers.Dense(50, activation='relu'))
+        self.model.add(keras.layers.Dense(3, activation='softmax'))
+        self.model.compile(optimizer=tf.train.AdamOptimizer(0.001),
+                      loss='categorical_crossentropy',
+                      metrics=['accuracy'])
+
+    def get_action(self, obs, reward, done, info):
+        # unique socket ID
+        socketUuid = obs[0]
+        # TCP env type: event-based = 0 / time-based = 1
+        envType = obs[1]
+        # sim time in us
+        simTime_us = obs[2]
+        # unique node ID
+        nodeId = obs[3]
+        # current ssThreshold
+        ssThresh = obs[4]
+        # current contention window size
+        cWnd = obs[5]
+        # segment size
+        segmentSize = obs[6]
+        # bytesInFlightSum
+        bytesInFlightSum = obs[7]
+        # bytesInFlightAvg
+        bytesInFlightAvg = obs[8]
+        # segmentsAckedSum
+        segmentsAckedSum = obs[9]
+        # segmentsAckedAvg
+        segmentsAckedAvg = obs[10]
+        # avgRtt
+        avgRtt = obs[11]
+        # minRtt
+        minRtt = obs[12]
+        # avgInterTx
+        avgInterTx = obs[13]
+        # avgInterRx
+        avgInterRx = obs[14]
+        # throughput
+        throughput = obs[15]
+
+        new_ssThresh = int(max(2 * segmentSize, bytesInFlightAvg / 2))
+        actioan_cwnd = np.argmax(self.model.predict(np.reshape(obs, [1, self.s_size]))[0])
+        new_cWnd = cWnd
+        if actioan_cwnd == 0:
+            new_cWnd += 10
+        elif actioan_cwnd == 1:
+            new_cWnd -= 1
+
+        return [new_ssThresh, new_cWnd]
+
+    def fit(self, state, target, action):
+        target_f = self.model.predict(np.reshape(state, [1, self.s_size]))
+        target_f[0][action] = target
+        self.model.fit(np.reshape(state, [1, self.s_size]), target_f, epochs=1, verbose=0)
+
+
