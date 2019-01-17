@@ -38,7 +38,7 @@ class TcpGymEnv : public OpenGymEnv
 public:
   TcpGymEnv ();
   virtual ~TcpGymEnv ();
-  static TypeId GetTypeId (void);
+  static TypeId GetTypeId (void); //TypeId设置
   virtual void DoDispose ();
 
   void SetNodeId(uint32_t id);
@@ -79,7 +79,7 @@ public:
   } CalledFunc_t;
 
 protected:
-  uint32_t m_nodeId;
+  uint32_t m_nodeId; //节点ID
   uint32_t m_socketUuid;
 
   // state

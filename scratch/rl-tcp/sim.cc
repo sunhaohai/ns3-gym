@@ -54,7 +54,7 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE ("TcpVariantsComparison");
 
-static std::vector<uint32_t> rxPkts;
+static std::vector<uint32_t> rxPkts; //储存节点收到的包的个数
 
 static void
 CountRxPkts(uint32_t sinkId, Ptr<const Packet> packet, const Address & srcAddr)
@@ -90,6 +90,7 @@ int main (int argc, char *argv[])
   uint32_t mtu_bytes = 400;
   double duration = 10.0;
   uint32_t run = 0;
+  uint32_t simSeed = 1;
   bool flow_monitor = false;
   bool sack = true;
   std::string queue_disc_type = "ns3::PfifoFastQueueDisc";
@@ -98,7 +99,7 @@ int main (int argc, char *argv[])
   CommandLine cmd;
   // required parameters for OpenGym interface
   cmd.AddValue ("openGymPort", "Port number for OpenGym env. Default: 5555", openGymPort);
-  cmd.AddValue ("simSeed", "Seed for random generator. Default: 1", run);
+  cmd.AddValue ("simSeed", "Seed for random generator. Default: 0", simSeed);
   cmd.AddValue ("envTimeStep", "Time step interval for time-based TCP env [s]. Default: 0.1s", tcpEnvTimeStep);
   // other parameters
   cmd.AddValue ("nLeaf",     "Number of left and right side leaf nodes", nLeaf);
@@ -124,7 +125,7 @@ int main (int argc, char *argv[])
 
   transport_prot = std::string ("ns3::") + transport_prot;
 
-  SeedManager::SetSeed (1);
+  SeedManager::SetSeed (simSeed);
   SeedManager::SetRun (run);
 
   NS_LOG_UNCOND("Ns3Env parameters:");
@@ -135,7 +136,7 @@ int main (int argc, char *argv[])
     NS_LOG_UNCOND("--openGymPort: No OpenGym");
   }
 
-  NS_LOG_UNCOND("--seed: " << run);
+  NS_LOG_UNCOND ("--seed: " << simSeed);
   NS_LOG_UNCOND("--Tcp version: " << transport_prot);
 
 

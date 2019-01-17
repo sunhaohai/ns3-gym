@@ -191,9 +191,9 @@ class TcpTimeDQLearning(Tcp):
         actioan_cwnd = np.argmax(self.model.predict(np.reshape(obs, [1, self.s_size]))[0])
         new_cWnd = cWnd
         if actioan_cwnd == 0:
-            new_cWnd += 10
+            new_cWnd += segmentSize
         elif actioan_cwnd == 1:
-            new_cWnd -= 1
+            new_cWnd -= segmentSize
 
         return [new_ssThresh, new_cWnd]
 

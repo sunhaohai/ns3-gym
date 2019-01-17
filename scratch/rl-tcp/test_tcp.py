@@ -95,6 +95,9 @@ def draw_pic(data, label, x_label, y_label, save_path):
 
     plt.savefig(save_path, bbox_inches='tight')
 
+def utilites(throughput, rtt):
+    return 0.01 * np.log(throughput) + 0.001 * np.log(rtt)
+
 
 def get_agent(obs):
     socketUuid = obs[0]
@@ -154,6 +157,11 @@ try:
             print("Step: ", stepIdx)
             next_obs, reward, done, info = env.step(action)
             print("---obs, reward, done, info: ", next_obs, reward, done, info)
+
+            if utilites(next_obs[15], next_obs[11]) > utilites(obs[15], obs[11]):
+                reward = 10
+            else:
+                reward = -20
 
             target = reward
             if not done:
